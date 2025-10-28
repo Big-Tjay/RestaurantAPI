@@ -1,6 +1,9 @@
 from django.apps import AppConfig
 
 
-class RatingsConfig(AppConfig):
+class RestaurantapiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'ratings'
+    name = 'restaurantAPI'
+
+    def ready(self):
+        import restaurantAPI.signals

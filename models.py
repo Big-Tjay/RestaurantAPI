@@ -1,29 +1,78 @@
-from django.core.exceptions import ValidationError
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-from django.core.validators import MinValueValidator, MaxValueValidator
+# from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from auths.users.models import User
+from ratings.models import Rate
 
 
-class Rate(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rate = models.SmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
+class Category(models.Model):
+    slug = models.SlugField()
+    title = models.CharField(max_length=255, db_index=True)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['content_type', 'object_id'])
-        ]
-        db_table = 'rates'
-        verbose_name = 'rate'
-        verbose_name_plural = 'rates'
+        db_table = 'categories'
+        verbose_name = 'category'
+        verbose_name_plural = 'categories'
 
-    def clean(self):
-        model_class = self.content_type.model_class()
-        try:
-            model_instance = model_class.objects.get(pk=self.object_id)
-        except model_class.DoesNotExist:
-            raise ValidationError('Invalid object_id')
+    def __str__(self):
+        return self.title
+
+
+class MenuItem(models.Model):
+    title = models.CharField(max_length=255, db_index=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
+    featured = models.BooleanField(db_index=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    rate = GenericRelation(Rate)
+
+    class Meta:
+        db_table = 'menu_items'
+        verbose_name = 'menu_item'
+        verbose_name_plural = 'menu_items'
+
+    def __str__(self):
+        return self.title
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.SmallIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        # unique_together = ('menuitem', 'user')
+        db_table = 'carts'
+        verbose_name = 'cart'
+        verbose_name_plural = 'carts'
+
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    delivery_crew = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="delivery_crew", null=True)
+    status = models.BooleanField(default=0, db_index=True)
+    total = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    customer_address = models.TextField(blank=False, null=False, default='in restaurant')
+    date = models.DateField(db_index=True)
+    delivered_time = models.DateTimeField(null=True, blank=True, default=None)
+
+    class Meta:
+        db_table = 'orders'
+        verbose_name = 'order'
+        verbose_name_plural = 'orders'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name='order')
+    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.SmallIntegerField()
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        unique_together = ('order', 'menuitem')
+        db_table = 'order_items'
+        verbose_name = 'order_item'
+        verbose_name_plural = 'order_items'

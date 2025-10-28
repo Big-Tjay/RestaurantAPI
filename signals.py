@@ -1,15 +1,12 @@
-from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
-from .models import Profile
-
-User = get_user_model()
+from django.contrib.auth.models import Group
+from auths.users.models import User
 
 
 @receiver(post_save, sender=User)
-def make_profile_for_user(sender, instance, created, **kwargs):
+def assign_to_customer_group(sender, instance, created, **kwargs):
     if created:
-        if not hasattr(instance, 'profile'):
-            user_profile = Profile.objects.create(user=instance)
-            user_profile.save()
+        if not instance.groups.exists():
+            customer_group, _ = Group.objects.get_or_create(name='customer')
+            instance.groups.add(customer_group)

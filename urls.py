@@ -1,29 +1,65 @@
-"""
-URL configuration for core project.
+from django.urls import path
 
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-from django.contrib import admin
-from django.urls import path, include
-
-from rest_framework.authtoken import views
+from .views import ListMenuItems, ManagerGroupManagement, DeliveryGroupManagement, UserCartManager, OrderManagement, \
+    OrderDeliveryStatusManagement, ListCategory, DeliveryCrewReadyToWorkStatusManagement, OrderDeliveryCrewChanger, \
+    DeliveredOrders, MenuItemAvailability, UserOrdersHistory, MenuItemPriceAdjustment, SaleReport, MenuItemRatings, \
+    CustomerAddressManagement
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),  # browsable API login and logout
-    path('token/', views.obtain_auth_token),  # access token endpoint
-    path('auth/', include('djoser.urls')),
+    path('menu-items', ListMenuItems.as_view()),
+    path('menu-items/<int:pk>', ListMenuItems.as_view()),
 
-    path('api/', include('restaurantAPI.urls')),
+
+    path('category', ListCategory.as_view()),
+    path('category/<int:pk>', ListCategory.as_view()),
+
+    path('groups/manager/users', ManagerGroupManagement.as_view()),
+    path('groups/manager/users/<int:pk>', ManagerGroupManagement.as_view()),
+
+    path('groups/delivery-crew/users', DeliveryGroupManagement.as_view()),
+    path('groups/delivery-crew/users/<int:pk>', DeliveryGroupManagement.as_view()),
+
+
+    path('cart/menu-items', UserCartManager.as_view()),
+    path('cart/menu-items/<int:pk>', UserCartManager.as_view()),
+
+
+    path('orders', OrderManagement.as_view()),
+    path('orders/<int:pk>', OrderManagement.as_view()),
+
+    path('delivery', OrderDeliveryStatusManagement.as_view()),
+    path('delivery/<int:pk>', OrderDeliveryStatusManagement.as_view()),
+
+
+    path('deliverystatus', DeliveryCrewReadyToWorkStatusManagement.as_view()),
+
+
+    path('undelivered', OrderDeliveryCrewChanger.as_view()),
+    path('undelivered/<int:pk>', OrderDeliveryCrewChanger.as_view()),
+
+    path('delivered', DeliveredOrders.as_view()),
+    path('delivered/<int:pk>', DeliveredOrders.as_view()),
+
+
+    path('menuitemstatus', MenuItemAvailability.as_view()),
+    path('menuitemstatus/<int:pk>', MenuItemAvailability.as_view()),
+
+
+    path('orderhistory', UserOrdersHistory.as_view()),
+    path('orderhistory/<int:pk>', UserOrdersHistory.as_view()),
+
+
+    path('price-change', MenuItemPriceAdjustment.as_view()),
+    path('price-change/<int:pk>', MenuItemPriceAdjustment.as_view()),
+
+
+    path('sale', SaleReport.as_view()),
+
+
+    path('rate', MenuItemRatings.as_view()),
+    path('rate/<int:pk>', MenuItemRatings.as_view()),
+
+
+    path('address', CustomerAddressManagement.as_view()),
+    path('address/<int:pk>', CustomerAddressManagement.as_view()),
 ]
