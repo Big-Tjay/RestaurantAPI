@@ -1,15 +1,14 @@
 from rest_framework import serializers
 
-from auths.users.models import Address
+from .models import Rate
 
 
-class AddressSerializer(serializers.ModelSerializer):
+class RateCreateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Address
-        fields = [
-            'id',
-            'profile',
-            'city',
-            'country',
-            'details',
-        ]
+        model = Rate
+        fields = ['id',
+                  'user',
+                  'rate',
+                  'content_type',
+                  'object_id'
+                  ]
